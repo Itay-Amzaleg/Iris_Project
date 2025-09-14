@@ -8,6 +8,20 @@ from sklearn.cluster import KMeans
 pd.set_option('display.max_columns', None)
 pd.set_option('display.width', None)
 
+"""
+First project written in python
+
+Main goals:
+
+1.getting used to work with python syntax:
+adding meaningfull and meaning less columns to the Iris data set
+calculating common statistical metrics
+
+
+2.running K-means with K=3 to on every 2 attributes combination and calculating the silhouette score, 
+
+"""
+
 
 def MessWithData(data):
     df_iris["is_big"] = df_iris.apply(lambda row: 1 if (row["sepal length (cm)"] > 3 and row["sepal width (cm)"] > 3) else 0, axis=1)

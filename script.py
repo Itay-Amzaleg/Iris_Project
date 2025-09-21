@@ -56,8 +56,11 @@ if __name__ == '__main__':
         kMeans.fit(X)
         labels = kMeans.labels_
         centroids = kMeans.cluster_centers_
+        plt.scatter(X[a],X[b], c = labels)
+        plt.scatter(centroids[:,0],centroids[:,1],marker='*',s=100, color = "r")
+        plt.show()
         print(labels)
-        break
+
 
 
 

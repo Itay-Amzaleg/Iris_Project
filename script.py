@@ -36,8 +36,7 @@ since i never implemented KNN i will re-write the algorithm by myself
 5.Running KNN with different amount of neighbors (1 to max) and calculating recall, recision and f1 score to each model
 
 6.Visualise the results of Step 5 with graphs
-kMeans = sk.cluster.KMeans(n_clusters=3)
-        kMeans.fit(df_iris[pair])
+
 """
 
 
@@ -47,11 +46,20 @@ if __name__ == '__main__':
     dataPre.addColumns(df_iris)
     dataPre.statistics(df_iris)
     normalized_iris = dataPre.normalize(df_iris)
+    true_labels = iris.target
     #normalized_iris will be used solely for K-means (we don't want data leakage for KNN)
 
 
-    for pair in itertools.combinations(df_iris.columns, 2):
-        print(pair)
+    for a,b in itertools.combinations(df_iris.columns, 2):
+        kMeans = sk.cluster.KMeans(n_clusters=3, random_state=40)
+        X = normalized_iris[[a,b]]
+        kMeans.fit(X)
+        labels = kMeans.labels_
+        centroids = kMeans.cluster_centers_
+        print(labels)
+        break
+
+
 
     """
     

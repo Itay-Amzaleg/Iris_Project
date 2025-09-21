@@ -51,7 +51,7 @@ def print_Corr_Bars(data, top5, least5):
         label = f"{row.var1} & {row.var2}"
         idx = xlabels.index(label)
         bar = corr_bar[idx]
-        ax.text(bar.get_x() + 0.2, bar.get_height() + 0.01, f'#{row.Index+1}', ha="center", va="bottom")
+        ax.text(bar.get_x() + width, bar.get_height() + 0.01, f'#{row.Index+1}', ha="center", va="bottom")
     for spine in ax.spines.values():
         spine.set_linewidth(1.5)
     ax.title.set_text("Iris Correlation")

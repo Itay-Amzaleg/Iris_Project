@@ -2,9 +2,12 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import sklearn as sk
+from sklearn.metrics import confusion_matrix
+
 import Data_Preprocessing as dataPre
 import itertools
-
+import calculate_Scores as scores
+from scipy.stats import mode
 
 
 pd.set_option('display.max_columns', None)
@@ -38,7 +41,28 @@ since i never implemented KNN i will re-write the algorithm by myself
 6.Visualise the results of Step 5 with graphs
 
 """
+def get_Adjusted_Predictions(true, labeled):
+    new_Order = np.zeros_like(labeled)
+    for i in range(len(np.unique(labeled))):
+        mask = (labeled == i)
+        new_Order[mask] = mode(true[mask])[0]
+    return new_Order
 
+def create_Graph(x,y,labels,centroids):
+    plt.scatter(X[a], X[b], c=labels)
+    plt.scatter(centroids[:, 0], centroids[:, 1], marker='*', s=100, color="r")
+    plt.title(f'{a} VS {b}')
+    plt.xlabel(a)
+    plt.ylabel(b)
+    plt.show()
+
+def calc_Scores(true, predicted, centroids,confusion_matrix):
+    scores = []
+    scores.append(calculate_Scores.)
+
+def create_Confusion_Matrix(true, predicted):
+    matrix = pd.DataFrame(columns = ["TP", "FP"], index = ["TN", "FN"])
+        matrix["TP"] = [np.sum(true == predicted), np.sum()]
 
 if __name__ == '__main__':
     iris = sk.datasets.load_iris()
@@ -49,45 +73,43 @@ if __name__ == '__main__':
     true_labels = iris.target
     #normalized_iris will be used solely for K-means (we don't want data leakage for KNN)
 
-
+    #cluster the data in 2D for every combination of attributes
     for a,b in itertools.combinations(df_iris.columns, 2):
         kMeans = sk.cluster.KMeans(n_clusters=3, random_state=40)
         X = normalized_iris[[a,b]]
         kMeans.fit(X)
         labels = kMeans.labels_
         centroids = kMeans.cluster_centers_
-        plt.scatter(X[a],X[b], c = labels)
-        plt.scatter(centroids[:,0],centroids[:,1],marker='*',s=100, color = "r")
-        plt.show()
-        print(labels)
+        create_Graph(a,b,labels,centroids)
+        new_Labels = get_Adjusted_Predictions(true_labels, labels)
+        confusion_matrix = create_Confusion_Matrix(true_labels, new_Labels)
+        score_Matrix = pd.DataFrame(index=["Silhouette Score", "Purity", "Accuracy","recall","precision", "f1 Score"])
+        score_Matrix[f'{a} and {b}'] = calc_Scores(true_labels, new_Labels,centroids, confusion_matrix)
+        break
+
+"""
 
 
+   #splitting for training and testing data for KNN later
+   df_iris_train = df_iris.sample(frac=0.8)
+   df_iris_test = df_iris.drop(df_iris_train.index)
+
+   #*setting up Kmeans Model
+   kmeans = sk.cluster.KMeans(n_clusters=3)
+   minmax_scaler = sk.preprocessing.MinMaxScaler()
+   df_iris_scaled = pd.DataFrame(minmax_scaler.fit_transform(df_iris), columns=df_iris.columns)
+   selected_features = ["sepal length (cm)","sepal width (cm)"]
+   df_selected = df_iris_scaled[selected_features]
+   kmeans.fit_transform(df_selected)
+   df_iris["cluster"] = kmeans.labels_
+   centroids = kmeans.cluster_centers_
 
 
-    """
-    
+   plt.scatter(df_iris_scaled["sepal length (cm)"], df_iris_scaled["sepal width (cm)"], c=df_iris["cluster"])
+   plt.scatter(centroids[:,0], centroids[:,1], color='white', edgecolors='black', marker='o', s=500, alpha= 0.5)
 
-    #splitting for training and testing data for KNN later
-    df_iris_train = df_iris.sample(frac=0.8)
-    df_iris_test = df_iris.drop(df_iris_train.index)
-
-    #*setting up Kmeans Model
-    kmeans = sk.cluster.KMeans(n_clusters=3)
-    minmax_scaler = sk.preprocessing.MinMaxScaler()
-    df_iris_scaled = pd.DataFrame(minmax_scaler.fit_transform(df_iris), columns=df_iris.columns)
-    selected_features = ["sepal length (cm)","sepal width (cm)"]
-    df_selected = df_iris_scaled[selected_features]
-    kmeans.fit_transform(df_selected)
-    df_iris["cluster"] = kmeans.labels_
-    centroids = kmeans.cluster_centers_
-
-
-    plt.scatter(df_iris_scaled["sepal length (cm)"], df_iris_scaled["sepal width (cm)"], c=df_iris["cluster"])
-    plt.scatter(centroids[:,0], centroids[:,1], color='white', edgecolors='black', marker='o', s=500, alpha= 0.5)
-
-    plt.show()
-    """
-
+   plt.show()
+   """
 
 
 

@@ -1,15 +1,28 @@
 
+def silhouette_Score():
 
+def purity():
 
-def recall(data, true_label):
+def accuracy():
 
+def recall(confusion_matrix):
+    tp =
+    tn =
+    fp =
+    fn =
 
-    return 3
+    return tp / (tp + fn)
 
-def precision(data, true_label):
-    return 2
+def precision(confusion_matrix):
+    tp =
+    tn =
+    fp =
+    fn =
 
-def f1(data, true_label):
-    pre = precision(data, true_label)
-    rec = recall(data, true_label)
+    return tp / (tp + fp)
+
+def f1(confusion_matrix):
+    pre = precision(confusion_matrix)
+    rec = recall(confusion_matrix)
     return pre * rec * 2 / (pre + rec)
+

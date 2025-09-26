@@ -1,3 +1,5 @@
+from numpy import sqrt as sqrt
+
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -6,16 +8,22 @@ def loadData(path):
     return pd.read_csv(path)
 
 def addColumns(df):
-    df["is_big"] = df.apply(
-        lambda row: 1 if (row["sepal length (cm)"] > 3 and row["sepal width (cm)"] > 3) else 0, axis=1)
-    df["sepal avg"] = df[["sepal length (cm)", "sepal width (cm)"]].mean(axis=1)
-    df["petal avg"] = (df["petal length (cm)"] + df["petal width (cm)"]) / 2.0
+    #adding some non-linear connections between the features
+    df["sepal area"] = df["sepal length (cm)"] * df["sepal width (cm)"]
+    df["petal area"] = df["petal length (cm)"] * df["petal width (cm)"]
+    df["sepal aspect"] = df["sepal length (cm)"] / df["sepal width (cm)"]
+    df["petal aspect"] = df["petal length (cm)"] / df["petal width (cm)"]
+    df["area ratio"] = df["sepal area"] / df["petal area"]
+    df["sepal diagonal"] = sqrt(df["sepal length (cm)"]**2 + df["sepal width (cm)"]**2)
+    df["petal diagonal"] = sqrt(df["petal length (cm)"]**2 + df["petal width (cm)"]**2)
+    df["petal width X sepal length"] = df["petal width (cm)"] * df["sepal length (cm)"]
+    df["petal length X sepal width"] = df["petal length (cm)"] * df["sepal width (cm)"]
+
 
 def statistics(df):
-    statistics = df.describe().round(2)
     corr_matrix = df.corr()
-    print(statistics)
-    print(corr_matrix)
+    print(df.round(2))
+    print(corr_matrix.round(2))
     corr_pairs = (
         corr_matrix.unstack()
             .reset_index()

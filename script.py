@@ -6,6 +6,8 @@ from sklearn.metrics import confusion_matrix
 
 import Data_Preprocessing as dataPre
 import itertools
+
+import calculate_Scores
 import calculate_Scores as scores
 from scipy.stats import mode
 
@@ -56,20 +58,18 @@ def create_Graph(x,y,labels,centroids):
     plt.ylabel(b)
     plt.show()
 
-def calc_Scores(true, predicted, centroids,confusion_matrix):
-    scores = []
-    scores.append(calculate_Scores.)
-
-def create_Confusion_Matrix(true, predicted):
-    matrix = pd.DataFrame(columns = ["TP", "FP"], index = ["TN", "FN"])
-        matrix["TP"] = [np.sum(true == predicted), np.sum()]
+#def calc_Scores(true, predicted, centroids,confusion_matrix):
+ #   scores = []
+  #  scores.append(calculate_Scores
 
 if __name__ == '__main__':
     iris = sk.datasets.load_iris()
     df_iris = pd.DataFrame(iris.data, columns=iris.feature_names)
     dataPre.addColumns(df_iris)
+    print(df_iris)
     dataPre.statistics(df_iris)
     normalized_iris = dataPre.normalize(df_iris)
+    print(normalized_iris)
     true_labels = iris.target
     #normalized_iris will be used solely for K-means (we don't want data leakage for KNN)
 
@@ -82,10 +82,11 @@ if __name__ == '__main__':
         centroids = kMeans.cluster_centers_
         create_Graph(a,b,labels,centroids)
         new_Labels = get_Adjusted_Predictions(true_labels, labels)
-        confusion_matrix = create_Confusion_Matrix(true_labels, new_Labels)
-        score_Matrix = pd.DataFrame(index=["Silhouette Score", "Purity", "Accuracy","recall","precision", "f1 Score"])
-        score_Matrix[f'{a} and {b}'] = calc_Scores(true_labels, new_Labels,centroids, confusion_matrix)
-        break
+        confusion_matrix = calculate_Scores.create_Confusion_Matrix(true_labels, new_Labels)
+        print(confusion_matrix)
+        #score_Matrix = pd.DataFrame(index=["Silhouette Score", "Purity", "Accuracy","recall","precision", "f1 Score"])
+        #score_Matrix[f'{a} and {b}'] = calc_Scores(true_labels, new_Labels,centroids, confusion_matrix)
+
 
 """
 

@@ -27,7 +27,7 @@ Main goals:
 
 Work Flow:
 
-1.Adding meaningfull and meaning less columns to the Iris data set calculating common statistical metrics
+1.Adding meaningfull columns to the Iris data set calculating common statistical metrics
 
 2.running K-means with K=3 on every 2 attributes combination and calculating the silhouette score, purity, recall, precision and f1 score
 (since i know the true labels) and making conclusions about the "best" and "worst" combinations of attributes
@@ -36,9 +36,9 @@ since i already implemented K-means in the past I will use the sk_learn model
 3.Visualise the results of Step 2 with graphs
 
 4.Running K-means with K=max_attributes to see if a higher dimensional clustering will lead to a better result
-since i never implemented KNN i will re-write the algorithm by myself
 
 5.Running KNN with different amount of neighbors (1 to max) and calculating recall, recision and f1 score to each model
+since i never implemented KNN i will re-write the algorithm by myself
 
 6.Visualise the results of Step 5 with graphs
 
@@ -58,20 +58,31 @@ def create_Graph(x,y,labels,centroids):
     plt.ylabel(b)
     plt.show()
 
-#def calc_Scores(true, predicted, centroids,confusion_matrix):
- #   scores = []
-  #  scores.append(calculate_Scores
+def calc_Scores(true, predicted, centroids,c, metrics):
+
+    confusion_matrix = calculate_Scores.create_Confusion_Matrix(true_labels, new_Labels)
+    print(confusion_matrix)
+    registry = {
+        #"silhouette" : lambda: calculate_Scores.silhouette_Score(predicted, centroids),
+        "purity" : lambda: calculate_Scores.purity(true, predicted),
+        "accuracy" : lambda: calculate_Scores.accuracy(confusion_matrix),
+        "recall" : lambda: calculate_Scores.recall(confusion_matrix,c),
+        "precision" : lambda: calculate_Scores.precision(confusion_matrix,c),
+        "f1" : lambda: calculate_Scores.f1(confusion_matrix,c)
+    }
+    return [round(float(registry[m]()), 3) for m in metrics]
+
+
 
 if __name__ == '__main__':
     iris = sk.datasets.load_iris()
     df_iris = pd.DataFrame(iris.data, columns=iris.feature_names)
     dataPre.addColumns(df_iris)
-    print(df_iris)
     dataPre.statistics(df_iris)
     normalized_iris = dataPre.normalize(df_iris)
-    print(normalized_iris)
     true_labels = iris.target
     #normalized_iris will be used solely for K-means (we don't want data leakage for KNN)
+    score_Matrix = pd.DataFrame(index=["Purity", "Accuracy", "Recall", "Precision", "f1 Score"])
 
     #cluster the data in 2D for every combination of attributes
     for a,b in itertools.combinations(df_iris.columns, 2):
@@ -82,10 +93,9 @@ if __name__ == '__main__':
         centroids = kMeans.cluster_centers_
         create_Graph(a,b,labels,centroids)
         new_Labels = get_Adjusted_Predictions(true_labels, labels)
-        confusion_matrix = calculate_Scores.create_Confusion_Matrix(true_labels, new_Labels)
-        print(confusion_matrix)
-        #score_Matrix = pd.DataFrame(index=["Silhouette Score", "Purity", "Accuracy","recall","precision", "f1 Score"])
-        #score_Matrix[f'{a} and {b}'] = calc_Scores(true_labels, new_Labels,centroids, confusion_matrix)
+        score_Matrix[f'{a} and {b}'] = calc_Scores(true_labels, labels, centroids, 0,metrics=["purity","accuracy","recall","precision","f1"])
+        #will calculate "recall","precision","f1" as for Setosa Arbitrary
+    print(score_Matrix)
 
 
 """

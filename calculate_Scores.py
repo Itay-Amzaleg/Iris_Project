@@ -3,9 +3,33 @@ import numpy as np
 from scipy.stats import mode
 
 
-#def silhouette_Score(predicted, centroids):
 
-    #return 1
+def silhouette_Score(predicted, values):
+    """
+    :param predicted: labels after clustering
+    :param values: x and y values of each point
+    the silhouette score is calculated for each point where "a" is the distance within the cluster and "b" is the
+    average distance to the nearest cluster
+    :return:
+    """
+    s_scores = []
+    V = np.asarray(values, dtype=float)  # (n_samples, n_features)
+    y = np.asarray(predicted)
+    for i, point in enumerate(V):
+        same_cluster = V[y == y[i]]
+        A_distances = np.linalg.norm(same_cluster - point, axis=1)
+        score_A = np.mean(A_distances[A_distances != 0])
+        other_clusters = [label for label in np.unique(y) if label != y[i]]
+        B_distances = [
+            np.mean(np.linalg.norm(V[y == other_cluster] - point, axis=1))
+            for other_cluster in other_clusters
+        ]
+        score_B = np.min(B_distances)
+        score_s = (score_B - score_A) / max(score_A, score_B)
+        s_scores.append(score_s)
+
+    return np.mean(s_scores)
+
 
 def purity(true, non_adj_predicted):
     count = 0
@@ -22,7 +46,6 @@ def accuracy(cMatrix):
 
 def create_Confusion_Matrix(true, predicted):
     """
-
     :param true: the true labels of the data set - 0 for Setosa, 1 for Versicolor, 2 for Virginica
     :param predicted:
     :return: confusion_matrix as data frame

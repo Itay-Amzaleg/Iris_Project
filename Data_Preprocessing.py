@@ -68,9 +68,30 @@ def print_Corr_Bars(data, top5, least5):
 
 
 
-def normalize(df):
+def normalize(df, test =None):
     #will be using minmax scaler
-    normalized = df
-    for column in df.columns:
-        normalized[column] = ((normalized[column] - normalized[column].min())/ (normalized[column].max() - normalized[column].min()))
-    return normalized
+    normalized = df.copy()
+
+    if test is None:
+        for column in df.columns:
+            temp_min = normalized[column].min()
+            temp_max = normalized[column].max()
+            denom = temp_max - temp_min
+            if denom == 0:
+                normalized[column] = 0.0
+            else:
+                normalized[column] = ((normalized[column] - temp_min)/ denom)
+        return normalized
+    else:
+        test_Normalized = test.copy()
+        for column in df.columns:
+            temp_min = normalized[column].min()
+            temp_max = normalized[column].max()
+            denom = temp_max - temp_min
+            if denom == 0:
+                normalized[column] = 0.0
+                test_Normalized[column] = 0.0
+            else:
+                normalized[column] = ((normalized[column] - temp_min) / denom)
+                test_Normalized[column] = ((test_Normalized[column] - temp_min) / denom)
+        return normalized, test_Normalized

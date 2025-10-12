@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import sklearn as sk
 from sklearn.metrics import confusion_matrix
 
+import Data_Preprocessing
 import Data_Preprocessing as dataPre
 import itertools
 
@@ -50,7 +51,7 @@ def get_Adjusted_Predictions(true, labeled):
         new_Order[mask] = mode(true[mask])[0]
     return new_Order
 
-def create_Graph(x,y,labels,centroids):
+def create_Graph(labels,centroids):
     plt.scatter(X[a], X[b], c=labels)
     plt.scatter(centroids[:, 0], centroids[:, 1], marker='*', s=100, color="r")
     plt.title(f'{a} VS {b}')
@@ -58,12 +59,11 @@ def create_Graph(x,y,labels,centroids):
     plt.ylabel(b)
     plt.show()
 
-def calc_Scores(true, predicted, centroids,c, metrics):
-
+def calc_Scores(true, predicted,X, c, metrics):
     confusion_matrix = calculate_Scores.create_Confusion_Matrix(true_labels, new_Labels)
     print(confusion_matrix)
     registry = {
-        #"silhouette" : lambda: calculate_Scores.silhouette_Score(predicted, centroids),
+        "silhouette" : lambda: calculate_Scores.silhouette_Score(predicted,X),
         "purity" : lambda: calculate_Scores.purity(true, predicted),
         "accuracy" : lambda: calculate_Scores.accuracy(confusion_matrix),
         "recall" : lambda: calculate_Scores.recall(confusion_matrix,c),
@@ -72,55 +72,66 @@ def calc_Scores(true, predicted, centroids,c, metrics):
     }
     return [round(float(registry[m]()), 3) for m in metrics]
 
-
+def print_top_5(df):
+    top_5 = df.apply(lambda row: row.nlargest(5), axis=1)
+    for metric, row in top_5.iterrows():
+        print(f'Top 5 features combinations for {metric} are:')
+        row_clean = row.dropna().sort_values(ascending=False)
+        for index, (name, value) in enumerate(row_clean.items(), 1):
+            print(f'{index}. {name} with score of {value}')
 
 if __name__ == '__main__':
     iris = sk.datasets.load_iris()
-    df_iris = pd.DataFrame(iris.data, columns=iris.feature_names)
-    dataPre.addColumns(df_iris)
-    dataPre.statistics(df_iris)
-    normalized_iris = dataPre.normalize(df_iris)
+    df_iris_kMeans = pd.DataFrame(iris.data, columns=iris.feature_names)
+    dataPre.addColumns(df_iris_kMeans)
+    dataPre.statistics(df_iris_kMeans)
+    normalized_iris = dataPre.normalize(df_iris_kMeans)
     true_labels = iris.target
     #normalized_iris will be used solely for K-means (we don't want data leakage for KNN)
-    score_Matrix = pd.DataFrame(index=["Purity", "Accuracy", "Recall", "Precision", "f1 Score"])
+    kMeans_1 = sk.cluster.KMeans(n_clusters=3, random_state=40)
+    kMeans_1.fit(normalized_iris)
+    new_Labels = get_Adjusted_Predictions(true_labels,kMeans_1.labels_)
+    print(calc_Scores(true_labels, kMeans_1.labels_, normalized_iris, 0, metrics=["silhouette", "purity", "accuracy", "recall", "precision", "f1"]))
+
+    score_Matrix = pd.DataFrame(index=["silhouette","Purity", "Accuracy", "Recall", "Precision", "f1 Score"])
 
     #cluster the data in 2D for every combination of attributes
-    for a,b in itertools.combinations(df_iris.columns, 2):
-        kMeans = sk.cluster.KMeans(n_clusters=3, random_state=40)
+    for a,b in itertools.combinations(df_iris_kMeans.columns, 2):
+        kMeans_2 = sk.cluster.KMeans(n_clusters=3, random_state=40)
         X = normalized_iris[[a,b]]
-        kMeans.fit(X)
-        labels = kMeans.labels_
-        centroids = kMeans.cluster_centers_
-        create_Graph(a,b,labels,centroids)
+        kMeans_2.fit(X)
+        labels = kMeans_2.labels_
+        centroids = kMeans_2.cluster_centers_
+        create_Graph(labels,centroids)
         new_Labels = get_Adjusted_Predictions(true_labels, labels)
-        score_Matrix[f'{a} and {b}'] = calc_Scores(true_labels, labels, centroids, 0,metrics=["purity","accuracy","recall","precision","f1"])
+        score_Matrix[f'{a} and {b}'] = calc_Scores(true_labels, labels, X, 0,metrics=["silhouette", "purity","accuracy","recall","precision","f1"])
         #will calculate "recall","precision","f1" as for Setosa Arbitrary
+        break
     print(score_Matrix)
+    print_top_5(score_Matrix)
+
+    #this is the end of the kmeans section
+    #Suuming up: made a script that adds non-linear features, cluster the data based on every combination of 2 features and evaluates each combination to find the most
+    #"good" combinations depends on what metric intrest you the most
+    # a quick check will show that there are 2d clustering that are better than the 13d(4 original + 9 syntetic)
 
 
-"""
+
+    #From this paret on, the KNN algorithm will be manually written in order to practice basic understanding of it, and basic writing in python
+
+    df_iris_KNN = pd.DataFrame(iris.data, columns=iris.feature_names)
+    Data_Preprocessing.addColumns(df_iris_KNN)
+    #splitting for training and testing data for KNN later
+    df_iris_train = df_iris_KNN.sample(frac=0.8)
+    df_iris_test = df_iris_KNN.drop(df_iris_train.index)
+
+    #pre-processing - adding non-liner features (already done), normalizing (saving the min and max for each coulomn to normalize the test afterwerds
+    normalized_iris_train, normalized_iris_test = Data_Preprocessing.normalize(df_iris_train,df_iris_test)
 
 
-   #splitting for training and testing data for KNN later
-   df_iris_train = df_iris.sample(frac=0.8)
-   df_iris_test = df_iris.drop(df_iris_train.index)
-
-   #*setting up Kmeans Model
-   kmeans = sk.cluster.KMeans(n_clusters=3)
-   minmax_scaler = sk.preprocessing.MinMaxScaler()
-   df_iris_scaled = pd.DataFrame(minmax_scaler.fit_transform(df_iris), columns=df_iris.columns)
-   selected_features = ["sepal length (cm)","sepal width (cm)"]
-   df_selected = df_iris_scaled[selected_features]
-   kmeans.fit_transform(df_selected)
-   df_iris["cluster"] = kmeans.labels_
-   centroids = kmeans.cluster_centers_
-
-
-   plt.scatter(df_iris_scaled["sepal length (cm)"], df_iris_scaled["sepal width (cm)"], c=df_iris["cluster"])
-   plt.scatter(centroids[:,0], centroids[:,1], color='white', edgecolors='black', marker='o', s=500, alpha= 0.5)
-
-   plt.show()
-   """
+    #setting up Kmeans Model
+    kmeans = sk.cluster.KMeans(n_clusters=3)
+    minmax_scaler = sk.preprocessing.MinMaxScaler()
 
 
 

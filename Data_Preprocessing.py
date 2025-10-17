@@ -1,4 +1,4 @@
-from numpy import sqrt as sqrt
+import numpy as np
 
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -14,8 +14,8 @@ def addColumns(df):
     df["sepal aspect"] = df["sepal length (cm)"] / df["sepal width (cm)"]
     df["petal aspect"] = df["petal length (cm)"] / df["petal width (cm)"]
     df["area ratio"] = df["sepal area"] / df["petal area"]
-    df["sepal diagonal"] = sqrt(df["sepal length (cm)"]**2 + df["sepal width (cm)"]**2)
-    df["petal diagonal"] = sqrt(df["petal length (cm)"]**2 + df["petal width (cm)"]**2)
+    df["sepal diagonal"] = np.sqrt(df["sepal length (cm)"]**2 + df["sepal width (cm)"]**2)
+    df["petal diagonal"] = np.sqrt(df["petal length (cm)"]**2 + df["petal width (cm)"]**2)
     df["petal width X sepal length"] = df["petal width (cm)"] * df["sepal length (cm)"]
     df["petal length X sepal width"] = df["petal length (cm)"] * df["sepal width (cm)"]
 
@@ -95,3 +95,14 @@ def normalize(df, test =None):
                 normalized[column] = ((normalized[column] - temp_min) / denom)
                 test_Normalized[column] = ((test_Normalized[column] - temp_min) / denom)
         return normalized, test_Normalized
+
+def distance_matrix(df):
+    x = df.to_numpy()
+    distances = np.zeros((len(x), len(x)))
+
+    for row1 in range(len(x)):
+        curr_sample = x[row1] #getts a vector with 13 entries (sample)
+        for row2 in range(row1 + 1 , len(x)):
+            other_sample = x[row2]
+            distances[row1, row2] = np.linalg.norm(curr_sample - other_sample)
+    return distances

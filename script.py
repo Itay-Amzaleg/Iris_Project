@@ -82,6 +82,7 @@ def print_top_5(df):
 
 if __name__ == '__main__':
     iris = sk.datasets.load_iris()
+    """
     df_iris_kMeans = pd.DataFrame(iris.data, columns=iris.feature_names)
     dataPre.addColumns(df_iris_kMeans)
     dataPre.statistics(df_iris_kMeans)
@@ -114,24 +115,32 @@ if __name__ == '__main__':
     #Suuming up: made a script that adds non-linear features, cluster the data based on every combination of 2 features and evaluates each combination to find the most
     #"good" combinations depends on what metric intrest you the most
     # a quick check will show that there are 2d clustering that are better than the 13d(4 original + 9 syntetic)
+"""
 
 
-
-    #From this paret on, the KNN algorithm will be manually written in order to practice basic understanding of it, and basic writing in python
+    #From this part on, the KNN algorithm will be manually written in order to practice basic understanding of it, and basic writing in python
 
     df_iris_KNN = pd.DataFrame(iris.data, columns=iris.feature_names)
     Data_Preprocessing.addColumns(df_iris_KNN)
     #splitting for training and testing data for KNN later
-    df_iris_train = df_iris_KNN.sample(frac=0.8)
+    df_iris_train = df_iris_KNN.sample(frac=0.8, random_state=40)
+    iris_train_true_labels = iris.target[df_iris_train.index]
     df_iris_test = df_iris_KNN.drop(df_iris_train.index)
+    iris_test_true_labels = iris.target[df_iris_test.index]
+
 
     #pre-processing - adding non-liner features (already done), normalizing (saving the min and max for each coulomn to normalize the test afterwerds
     normalized_iris_train, normalized_iris_test = Data_Preprocessing.normalize(df_iris_train,df_iris_test)
 
+    distance_matrix = Data_Preprocessing.distance_matrix(normalized_iris_train)
 
-    #setting up Kmeans Model
-    kmeans = sk.cluster.KMeans(n_clusters=3)
-    minmax_scaler = sk.preprocessing.MinMaxScaler()
+    distance_matrix = distance_matrix + distance_matrix.T
+
+    #running knn with 1<=k<=50 (assuming max 50 samples for each type) to find the best value of K
+    train_predict = np.empty(len(df_iris_train))
+    for k in range(1,50):
+        for index in range(len(normalized_iris_train)):
+            closest_k = np.nlargest(distance_matrix[index],k)
 
 
 
